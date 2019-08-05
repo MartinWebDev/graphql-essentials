@@ -1,10 +1,25 @@
 import {
     GraphQLSchema,
     GraphQLObjectType,
+    GraphQLInputObjectType,
     GraphQLString,
     GraphQLID,
-    GraphQLList
+    GraphQLList,
+    GraphQLInt,
+    GraphQLNonNull
 } from "graphql";
+
+// "Database"
+const friendDatabase = {};
+friendDatabase[`123456789`] = {
+    firstName: "Martin",
+    lastName: "Wood", 
+    gender: "Male", 
+    language: "English",
+    contact: [
+        { type: "Primary", email: "martin@graphql.com", phone: "01234597890" }
+    ]
+};
 
 const ContactType = new GraphQLObjectType({
     name: "Contact", 
@@ -13,6 +28,16 @@ const ContactType = new GraphQLObjectType({
         type: { type: GraphQLString, resolve: c => c.type },
         email: { type: GraphQLString, resolve: c => c.email },
         phone: { type: GraphQLString, resolve: c => c.phone }
+    })
+});
+
+const ContactInput = new GraphQLInputObjectType({
+    name: "ContactInput", 
+    description: "This is the contact details",
+    fields: () => ({
+        type: { type: GraphQLString },
+        email: { type: GraphQLString },
+        phone: { type: GraphQLString }
     })
 });
 
@@ -34,22 +59,44 @@ const schema = new GraphQLSchema({
         name: "Query",
         description: "Main Query root",
         fields: () => ({
-            friend: {
+            getFriend: {
                 type: FriendType,
-                resolve: (root) => {
+                args: {
+                    ID: { type: GraphQLString }
+                },
+                resolve: (root, args) => {
                     return {
-                        ID: 123456789,
-                        firstName: "Martin",
-                        lastName: "Wood",
-                        gender: "Male",
-                        language: "English",
-                        contact: []
-                    };
+                        ID: args.ID, 
+                        ...friendDatabase[args.ID]
+                    }
                 }
             }
         })
     }),
-    // mutation: new GraphQLObjectType({})
+    mutation: new GraphQLObjectType({
+        name: "Mutation",
+        description: "Main Mutation root",
+        fields: () => ({
+            addFriend: {
+                type: FriendType,
+                args: {
+                    firstName: { type: GraphQLNonNull(GraphQLString) },
+                    lastName: { type: GraphQLNonNull(GraphQLString) },
+                    gender: { type: GraphQLNonNull(GraphQLString) },
+                    language: { type: GraphQLNonNull(GraphQLString) },
+                    contact: { type: GraphQLNonNull(GraphQLList(ContactInput)) }
+                },
+                resolve: (root, args) => {
+                    let id = require("crypto").randomBytes(10).toString("hex");
+                    friendDatabase[id] = args;
+                    return {
+                        ID: id, 
+                        ...friendDatabase[id]
+                    }
+                }
+            }
+        })
+    })
 });
 
 export default schema;
