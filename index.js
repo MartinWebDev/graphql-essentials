@@ -1,28 +1,18 @@
 import express from "express";
 import graphqlHTTP from "express-graphql";
 
-import schema from "./schema";
+// import schema from "./schema";
+import schema from "./schema2";
+import resolvers from "./resolvers";
 
 // Setup express server
 const app = express();
 
-// Setup graphql
-const root = {
-    friend: () => {
-        return {
-            id: 123456789,
-            firstName: "Martin",
-            lastName: "Wood", 
-            gender: "Male", 
-            language: "English",
-            email: "martin@graphql.com"
-        };
-    }
-};
-
 app.get("/", (req, res) => {
     res.send(`You are here on ${req.protocol}://${req.host}${req.path}`);
 });
+
+const root = resolvers;
 
 app.use("/graphql", graphqlHTTP({
     schema, 
