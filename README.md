@@ -11,31 +11,46 @@ Although the string template version is objectively easier to read, the object b
 ## Basic Types
 Template literal
 ```typescript
+enum Gender {
+    MALE,
+    FEMALE,
+    OTHER
+}
+
 type Contact {
-    type: String!,
-    email: String!,
-    phone: String
+    type:   String!,
+    email:  String!,
+    phone:  String
 }
 
 type Friend {
     id: ID,
-    firstName: String,
-    lastName: String, 
-    gender: Gender, 
-    language: String,
-    contact: [Contact]!
+    firstName:  String,
+    lastName:   String, 
+    gender:     Gender, 
+    language:   String,
+    contact:    [Contact]!
 }
 ```
 
 Object-oriented
 ```javascript
+const GenderType = new GraphQLEnumType({
+    name: "Gender",
+    values: {
+        MALE:   { value: "Male" },
+        FEMALE: { value: "Female" },
+        OTHER:  { value: "Other" }
+    }
+});
+
 const ContactType = new GraphQLObjectType({
     name: "Contact", 
     description: "This is the contact details",
     fields: () => ({
-        type: { type: GraphQLString, resolve: c => c.type },
-        email: { type: GraphQLString, resolve: c => c.email },
-        phone: { type: GraphQLString, resolve: c => c.phone }
+        type:   { type: GraphQLString, resolve: c => c.type },
+        email:  { type: GraphQLString, resolve: c => c.email },
+        phone:  { type: GraphQLString, resolve: c => c.phone }
     })
 });
 
@@ -43,12 +58,12 @@ const FriendType = new GraphQLObjectType({
     name: "Friend", 
     description: "This is the friend info",
     fields: () => ({
-        id: { type: GraphQLID, resolve: f => f.id },
-        firstName: { type: GraphQLString, resolve: f => f.firstName },
-        lastName: { type: GraphQLString, resolve: f => f.lastName },
-        gender: { type: GenderType, resolve: f => f.gender },
-        language: { type: GraphQLString, resolve: f => f.language },
-        contact: { type: GraphQLList(ContactType), resolve: f => f.contact }
+        id:         { type: GraphQLID,                  resolve: f => f.id },
+        firstName:  { type: GraphQLString,              resolve: f => f.firstName },
+        lastName:   { type: GraphQLString,              resolve: f => f.lastName },
+        gender:     { type: GenderType,                 resolve: f => f.gender },
+        language:   { type: GraphQLString,              resolve: f => f.language },
+        contact:    { type: GraphQLList(ContactType),   resolve: f => f.contact }
     })
 });
 ```
