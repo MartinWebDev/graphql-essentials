@@ -14,7 +14,7 @@ const friendDatabase = {};
 friendDatabase[`123456789`] = {
     firstName: "Martin",
     lastName: "Wood", 
-    gender: "Male", 
+    gender: "MALE", 
     language: "English",
     contact: [
         { type: "Primary", email: "martin@graphql.com", phone: "01234597890" }

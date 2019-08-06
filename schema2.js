@@ -7,7 +7,8 @@ import {
     GraphQLString,
     GraphQLID,
     GraphQLList,
-    GraphQLNonNull
+    GraphQLNonNull,
+    GraphQLEnumType
 } from "graphql";
 
 // "Database"
@@ -42,14 +43,23 @@ const ContactInput = new GraphQLInputObjectType({
     })
 });
 
+const GenderType = new GraphQLEnumType({
+    name: "Gender",
+    values: {
+        MALE: { value: "Male" },
+        FEMALE: { value: "Female" },
+        OTHER: { value: "Other" }
+    }
+});
+
 const FriendType = new GraphQLObjectType({
     name: "Friend", 
     description: "This is the friend info",
     fields: () => ({
-        ID: { type: GraphQLID, resolve: f => f.ID },
+        id: { type: GraphQLID, resolve: f => f.id },
         firstName: { type: GraphQLString, resolve: f => f.firstName },
         lastName: { type: GraphQLString, resolve: f => f.lastName },
-        gender: { type: GraphQLString, resolve: f => f.gender },
+        gender: { type: GenderType, resolve: f => f.gender },
         language: { type: GraphQLString, resolve: f => f.language },
         contact: { type: GraphQLList(ContactType), resolve: f => f.contact }
     })
@@ -61,7 +71,7 @@ const FriendInput = new GraphQLInputObjectType({
     fields: () => ({
         firstName: { type: GraphQLNonNull(GraphQLString) },
         lastName: { type: GraphQLNonNull(GraphQLString) },
-        gender: { type: GraphQLNonNull(GraphQLString) },
+        gender: { type: GraphQLNonNull(GenderType) },
         language: { type: GraphQLNonNull(GraphQLString) },
         contact: { type: GraphQLNonNull(GraphQLList(ContactInput)) }
     })
@@ -75,12 +85,12 @@ const schema = new GraphQLSchema({
             getFriend: {
                 type: FriendType,
                 args: {
-                    ID: { type: GraphQLString }
+                    id: { type: GraphQLString }
                 },
                 resolve: (root, args) => {
                     return {
-                        ID: args.ID, 
-                        ...friendDatabase[args.ID]
+                        id: args.id, 
+                        ...friendDatabase[args.id]
                     }
                 }
             }
@@ -99,7 +109,7 @@ const schema = new GraphQLSchema({
                     let id = crypto.randomBytes(10).toString("hex");
                     friendDatabase[id] = args.newFriend;
                     return {
-                        ID: id, 
+                        id: id, 
                         ...friendDatabase[id]
                     }
                 }
@@ -109,10 +119,3 @@ const schema = new GraphQLSchema({
 });
 
 export default schema;
-
-
-// firstName: { type: GraphQLNonNull(GraphQLString) },
-// lastName: { type: GraphQLNonNull(GraphQLString) },
-// gender: { type: GraphQLNonNull(GraphQLString) },
-// language: { type: GraphQLNonNull(GraphQLString) },
-// contact: { type: GraphQLNonNull(GraphQLList(ContactInput)) }

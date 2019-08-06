@@ -11,9 +11,15 @@ const schema = buildSchema(`
         id: ID,
         firstName: String,
         lastName: String, 
-        gender: String, 
+        gender: Gender, 
         language: String,
         contact: [Contact]!
+    }
+
+    enum Gender {
+        MALE,
+        FEMALE,
+        OTHER
     }
 
     type Query {
@@ -30,7 +36,7 @@ const schema = buildSchema(`
     input FriendInput {
         firstName: String!,
         lastName: String!, 
-        gender: String!, 
+        gender: Gender!, 
         language: String!,
         contact: [ContactInput]
     }
