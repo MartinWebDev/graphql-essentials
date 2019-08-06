@@ -1,3 +1,5 @@
+import crypto from "crypto";
+
 import {
     GraphQLSchema,
     GraphQLObjectType,
@@ -33,10 +35,10 @@ const ContactType = new GraphQLObjectType({
 
 const ContactInput = new GraphQLInputObjectType({
     name: "ContactInput", 
-    description: "This is the contact details",
+    description: "This is the contact input",
     fields: () => ({
-        type: { type: GraphQLString },
-        email: { type: GraphQLString },
+        type: { type: GraphQLNonNull(GraphQLString) },
+        email: { type: GraphQLNonNull(GraphQLString) },
         phone: { type: GraphQLString }
     })
 });
@@ -51,6 +53,18 @@ const FriendType = new GraphQLObjectType({
         gender: { type: GraphQLString, resolve: f => f.gender },
         language: { type: GraphQLString, resolve: f => f.language },
         contact: { type: GraphQLList(ContactType), resolve: f => f.contact }
+    })
+});
+
+const FriendInput = new GraphQLInputObjectType({
+    name: "FriendInput", 
+    description: "This is the friend input",
+    fields: () => ({
+        firstName: { type: GraphQLNonNull(GraphQLString) },
+        lastName: { type: GraphQLNonNull(GraphQLString) },
+        gender: { type: GraphQLNonNull(GraphQLString) },
+        language: { type: GraphQLNonNull(GraphQLString) },
+        contact: { type: GraphQLNonNull(GraphQLList(ContactInput)) }
     })
 });
 
@@ -80,15 +94,11 @@ const schema = new GraphQLSchema({
             addFriend: {
                 type: FriendType,
                 args: {
-                    firstName: { type: GraphQLNonNull(GraphQLString) },
-                    lastName: { type: GraphQLNonNull(GraphQLString) },
-                    gender: { type: GraphQLNonNull(GraphQLString) },
-                    language: { type: GraphQLNonNull(GraphQLString) },
-                    contact: { type: GraphQLNonNull(GraphQLList(ContactInput)) }
+                    newFriend: { type: GraphQLNonNull(FriendInput) }
                 },
                 resolve: (root, args) => {
-                    let id = require("crypto").randomBytes(10).toString("hex");
-                    friendDatabase[id] = args;
+                    let id = crypto.randomBytes(10).toString("hex");
+                    friendDatabase[id] = args.newFriend;
                     return {
                         ID: id, 
                         ...friendDatabase[id]
@@ -100,3 +110,10 @@ const schema = new GraphQLSchema({
 });
 
 export default schema;
+
+
+// firstName: { type: GraphQLNonNull(GraphQLString) },
+// lastName: { type: GraphQLNonNull(GraphQLString) },
+// gender: { type: GraphQLNonNull(GraphQLString) },
+// language: { type: GraphQLNonNull(GraphQLString) },
+// contact: { type: GraphQLNonNull(GraphQLList(ContactInput)) }
