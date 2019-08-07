@@ -1,6 +1,14 @@
 import { buildSchema } from "graphql";
 
 const schema = buildSchema(`
+    // Enums
+    enum Gender {
+        MALE,
+        FEMALE,
+        OTHER
+    }
+
+    // Types
     type Contact {
         type: String!,
         email: String!,
@@ -16,17 +24,7 @@ const schema = buildSchema(`
         contact: [Contact]!
     }
 
-    enum Gender {
-        MALE,
-        FEMALE,
-        OTHER
-    }
-
-    type Query {
-        getFriend(id: ID): Friend
-    }
-
-
+    // Input types
     input ContactInput {
         type: String!,
         email: String!,
@@ -41,6 +39,12 @@ const schema = buildSchema(`
         contact: [ContactInput]
     }
 
+    // Query
+    type Query {
+        getFriend(id: ID): Friend
+    }
+
+    // Mutation
     type Mutation {
         createFriend(input: FriendInput): Friend
     }
