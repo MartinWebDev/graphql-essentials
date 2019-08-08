@@ -100,7 +100,9 @@ const TweetType = new GraphQLObjectType({
         date: { type: GraphQLString, resolve: t => t.created_at },
         id: { type: GraphQLString, resolve: t => t.id.toString() },
         text: { type: GraphQLString, resolve: t => t.full_text || f.text },
-        username: { type: GraphQLString, resolve: t => t.user.screen_name }
+        username: { type: GraphQLString, resolve: t => t.user.screen_name },
+        retweets: { type: GraphQLInt, resolve: t => t.retweet_count },
+        likes: { type: GraphQLInt, resolve: t => t.favorite_count }
     })
 });
 
