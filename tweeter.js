@@ -1,6 +1,8 @@
-require("dotenv").config()
+// require("dotenv").config()
+import dotenv from "dotenv";
+dotenv.config();
 
-var Twitter = require("twitter");
+import Twitter from "twitter";
 
 const config = {
     consumerKey: process.env.CONSUMER_KEY,
@@ -19,23 +21,31 @@ class Tweeter {
         });
     }
 
-    getTweetsFromUser = (username) => {
+    getTweetsFromUser = username => {
         return new Promise((res, rej) => {
-            this.client.get("search/tweets", {q: `from:${username}`, tweet_mode: "extended"}, (error, tweets, response) => {
-                res(tweets.statuses);
-            });
+            this.client.get(
+                "search/tweets",
+                { q: `from:${username}`, tweet_mode: "extended" },
+                (error, tweets, response) => {
+                    res(tweets.statuses);
+                }
+            );
         });
     };
 
-    getTweetsFromHashtag = (hashtag) => {
+    getTweetsFromHashtag = hashtag => {
         return new Promise((res, rej) => {
-            this.client.get("search/tweets", {q: `#${hashtag}`, tweet_mode: "extended"}, (error, tweets, response) => {
-                res(tweets.statuses);
-            });
+            this.client.get(
+                "search/tweets",
+                { q: `#${hashtag}`, tweet_mode: "extended" },
+                (error, tweets, response) => {
+                    res(tweets.statuses);
+                }
+            );
         });
     };
 
-    postTweet = (text) => {
+    postTweet = text => {
         return new Promise((res, rej) => {
             this.client.post("statuses/update", { status: text }, (error, tweet, response) => {
                 res(tweet);
