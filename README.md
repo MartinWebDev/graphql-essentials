@@ -1,6 +1,9 @@
 # Running this app
 Simply run `yarn start`
 
+## Twitter
+To use the Twitter queries/mutations, you will need to create a ".env" file and fill it with the values as shown in "example.env". You will need to get these values from Twitter's Developer page.
+
 # Two methods
 This app was built from the GraphQL Essentials course on LinkedIn Learning in file `schema.js`, then also refactored into the strongly typed version in file `schema2.js`.
 Bit by bit the two methods are compared side by side as personally I prefer the strongly typed version.
