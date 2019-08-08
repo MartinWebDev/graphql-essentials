@@ -5,11 +5,15 @@ import {
     GraphQLObjectType,
     GraphQLInputObjectType,
     GraphQLString,
+    GraphQLInt,
     GraphQLID,
     GraphQLList,
     GraphQLNonNull,
     GraphQLEnumType
 } from "graphql";
+
+// Additional stuff for Twitter
+import Tweeter from "./tweeter";
 
 // "Database"
 const friendDatabase = {};
@@ -23,6 +27,21 @@ friendDatabase[`123456789`] = {
     ]
 };
 
+/**
+ * Enums
+ */
+const GenderType = new GraphQLEnumType({
+    name: "Gender",
+    values: {
+        MALE: { value: "Male" },
+        FEMALE: { value: "Female" },
+        OTHER: { value: "Other" }
+    }
+});
+
+/**
+ * Contact for Friend (Type and Input)
+ */
 const ContactType = new GraphQLObjectType({
     name: "Contact", 
     description: "This is the contact details",
@@ -43,15 +62,9 @@ const ContactInput = new GraphQLInputObjectType({
     })
 });
 
-const GenderType = new GraphQLEnumType({
-    name: "Gender",
-    values: {
-        MALE: { value: "Male" },
-        FEMALE: { value: "Female" },
-        OTHER: { value: "Other" }
-    }
-});
-
+/**
+ * Friend (Type and Input)
+ */
 const FriendType = new GraphQLObjectType({
     name: "Friend", 
     description: "This is the friend info",
@@ -77,6 +90,23 @@ const FriendInput = new GraphQLInputObjectType({
     })
 });
 
+/**
+ * Additional stuff just for twitter
+ */
+const TweetType = new GraphQLObjectType({
+    name: "Tweet", 
+    description: "Twitter Tweet information",
+    fields: () => ({
+        date: { type: GraphQLString, resolve: t => t.created_at },
+        id: { type: GraphQLString, resolve: t => t.id.toString() },
+        text: { type: GraphQLString, resolve: t => t.full_text || f.text },
+        username: { type: GraphQLString, resolve: t => t.user.screen_name }
+    })
+});
+
+/**
+ * Main Query/Mutation query
+ */
 const schema = new GraphQLSchema({
     query: new GraphQLObjectType({
         name: "Query",
@@ -92,6 +122,28 @@ const schema = new GraphQLSchema({
                         id: args.id, 
                         ...friendDatabase[args.id]
                     }
+                }
+            },
+            getTweetsFromUser: {
+                type: GraphQLList(TweetType),
+                args: {
+                    screenName: { type: GraphQLNonNull(GraphQLString) }
+                },
+                resolve: async (root, args) => {
+                    const tweeter = new Tweeter();
+                    const tweets = await tweeter.getTweetsFromUser(args.screenName);
+                    return tweets;
+                }
+            },
+            getTweetsFromHashtag: {
+                type: GraphQLList(TweetType),
+                args: {
+                    hashtag: { type: GraphQLNonNull(GraphQLString) }
+                },
+                resolve: async (root, args) => {
+                    const tweeter = new Tweeter();
+                    const tweets = await tweeter.getTweetsFromHashtag(args.hashtag);
+                    return tweets;
                 }
             }
         })
