@@ -34,6 +34,14 @@ class Tweeter {
             });
         });
     };
+
+    postTweet = (text) => {
+        return new Promise((res, rej) => {
+            this.client.post("statuses/update", { status: text }, (error, tweet, response) => {
+                res(tweet);
+            });
+        });
+    };
 }
 
 export default Tweeter;
