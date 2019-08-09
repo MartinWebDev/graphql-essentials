@@ -12,8 +12,11 @@ import {
     GraphQLEnumType
 } from "graphql";
 
+import { GraphQLDateTime } from "./GraphQLTypes/GraphQLDateTime";
+
 // Additional stuff for Twitter
 import Tweeter from "./tweeter";
+import { globalAgent } from "https";
 
 // "Database"
 const friendDatabase = {};
@@ -93,16 +96,42 @@ const FriendInput = new GraphQLInputObjectType({
 /**
  * Additional stuff just for twitter
  */
+const TwitterSearchType = new GraphQLEnumType({
+    name: "TwitterSearchType",
+    values: {
+        SCREENNAME: { value: "ScreenName" },
+        HASHTAG: { value: "Hashtag" }
+    }
+});
+
+const TwitterSearchInput = new GraphQLInputObjectType({
+    name: "TwitterSearchInput",
+    description: "Twitter object types for input",
+    fields: () => ({
+        type: { type: TwitterSearchType },
+        value: { type: GraphQLString }
+    })
+});
+
 const TweetType = new GraphQLObjectType({
     name: "Tweet", 
     description: "Twitter Tweet information",
     fields: () => ({
-        date: { type: GraphQLString, resolve: t => t.created_at },
+        date: { type: GraphQLDateTime, resolve: t => t.created_at },
         id: { type: GraphQLString, resolve: t => t.id.toString() },
         text: { type: GraphQLString, resolve: t => t.full_text || t.text },
         username: { type: GraphQLString, resolve: t => t.user.screen_name },
         retweets: { type: GraphQLInt, resolve: t => t.retweet_count },
         likes: { type: GraphQLInt, resolve: t => t.favorite_count }
+    })
+});
+
+const TweetMultiSearchType = new GraphQLObjectType({
+    name: "TweetMultiSearch", 
+    description: "Twitter Tweet hashtags and users in one",
+    fields: () => ({
+        hashtags: { type: GraphQLList(TweetType), resolve: t => t.hashtags },
+        users: { type: GraphQLList(TweetType), resolve: t => t.users }
     })
 });
 
@@ -145,6 +174,57 @@ const schema = new GraphQLSchema({
                 resolve: async (root, args) => {
                     const tweeter = new Tweeter();
                     const tweets = await tweeter.getTweetsFromHashtag(args.hashtag);
+                    return tweets;
+                }
+            },
+            getTweetsFromMultipleUsers: {
+                type: GraphQLList(TweetType),
+                args: {
+                    screenNames: { type: GraphQLNonNull(GraphQLList(GraphQLString)) }
+                },
+                resolve: async (root, args) => {
+                    let tweets = [];
+                    const tweeter = new Tweeter();
+                    
+                    for (let i = 0; i < args.screenNames.length; i++) {
+                        const gotTweets = await tweeter.getTweetsFromUser(args.screenNames[i]);
+                        tweets.push(...gotTweets);
+                    }
+
+                    tweets = tweets.sort((a, b) => a.created_at <= b.created_at)
+                    
+                    return tweets;
+                }
+            },
+            getTweetsOfMultipleObjects: {
+                type: TweetMultiSearchType,
+                args: {
+                    searchCriteria: { type: GraphQLNonNull(GraphQLList(TwitterSearchInput)) }
+                },
+                resolve: async (root, args) => {
+                    let tweetsHashtags = [];
+                    let tweetsUsers = [];
+                    const tweeter = new Tweeter();
+                    
+                    for (let i = 0; i < args.searchCriteria.length; i++) {
+                        let gotTweets = [];
+                        switch (args.searchCriteria[i].type) {
+                            case TwitterSearchType.SCREENNAME:
+                                gotTweets = await tweeter.getTweetsFromUser(args.searchCriteria[i].value);
+                                tweetsUsers.push(...gotTweets);
+                                break;
+                            case TwitterSearchType.HASHTAG:
+                                gotTweets = await tweeter.getTweetsFromHashtag(args.searchCriteria[i].value);
+                                tweetsHashtags.push(...gotTweets);
+                                break;
+                        }
+                    }
+
+                    const tweets = {
+                        hahstags: tweetsHashtags,
+                        users: tweetsUsers
+                    };
+
                     return tweets;
                 }
             }
