@@ -205,23 +205,25 @@ const schema = new GraphQLSchema({
                     let tweetsHashtags = [];
                     let tweetsUsers = [];
                     const tweeter = new Tweeter();
-                    
+
                     for (let i = 0; i < args.searchCriteria.length; i++) {
                         let gotTweets = [];
-                        switch (args.searchCriteria[i].type) {
-                            case TwitterSearchType.SCREENNAME:
+                        console.log(args.searchCriteria[i].value);
+                        switch (args.searchCriteria[i].type.toUpperCase()) {
+                            case "SCREENNAME":
                                 gotTweets = await tweeter.getTweetsFromUser(args.searchCriteria[i].value);
                                 tweetsUsers.push(...gotTweets);
                                 break;
-                            case TwitterSearchType.HASHTAG:
+                            case "HASHTAG":
                                 gotTweets = await tweeter.getTweetsFromHashtag(args.searchCriteria[i].value);
+                                console.log(gotTweets);
                                 tweetsHashtags.push(...gotTweets);
                                 break;
                         }
                     }
 
                     const tweets = {
-                        hahstags: tweetsHashtags,
+                        hashtags: tweetsHashtags,
                         users: tweetsUsers
                     };
 
